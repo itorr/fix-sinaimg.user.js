@@ -19,35 +19,20 @@
 const isSinaImageRegex = /sinaimg\.cn\//;
 const fixSinaImages = ()=>{
     [...document.images].filter(el=>isSinaImageRegex.test(el.src)).forEach(el=>{
-        if(el._srcReplaced) return;
-
-        const url = el.src;
-        el.removeAttribute('src');
-        el._srcReplaced = true;
         GM_xmlhttpRequest({
             method:'GET',
-            url,
+            url: el.src,
             responseType: 'blob',
             headers: {
                 'referer': 'https://weibo.com/mygroups'
             },
             onload(res){
-                const blob = res.response;
-                const url = URL.createObjectURL(blob);
-                el.src = url;
+                el.src = URL.createObjectURL(res.response);
             }
-        })
+        });
+        el.removeAttribute('src');
     });
 };
-
-
-
-const lazy = (func,ms = 15)=> _=>{
-    clearTimeout(func.T)
-    func.T = setTimeout(func,ms)
-};
-
-const listenerFunc = lazy( _ => fixSinaImages() );
 
 if(window.MutationObserver){
     (new MutationObserver(fixSinaImages)).observe(document.body,{
@@ -56,15 +41,7 @@ if(window.MutationObserver){
         attributes: true,
     });
 }else{
-    const {open,send} = XMLHttpRequest.prototype;
-    XMLHttpRequest.prototype.open = function(){
-        this.addEventListener('load',listenerFunc);
-        return open.apply(this,arguments);
-    };
-    document.addEventListener('DOMContentLoaded',listenerFunc);
-    document.addEventListener('DOMNodeInserted',listenerFunc);
+    document.addEventListener('DOMNodeInserted',fixSinaImages);
 }
-
-
 
 window.addEventListener('load',fixSinaImages);
