@@ -40,8 +40,7 @@ const fixSinaImage = el => {
 };
 
 const fixSinaImagesForObserver = mutationList => {
-    mutationList.forEach(asd => {
-        const { type, target, attributeName, oldValue, addedNodes, removedNodes } = asd;
+    mutationList.forEach(({ type, target, attributeName, oldValue, addedNodes, removedNodes }) => {
         // 有节点新增时，处理 url，不用去完整遍历 document.images
         if (addedNodes.length) {
             addedNodes.forEach(node => {
